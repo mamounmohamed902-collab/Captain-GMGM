@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كابتن جم جم — لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+    :root {
+        --gold: #ffd700;
+        --gold-light: #ffe84d;
+        --gold-dark: #c8a800;
+        --bg: #0c0c0c;
+        --surface: #141414;
+        --surface-2: #1c1c1c;
+        --border: rgba(255,215,0,0.15);
+        --border-hover: rgba(255,215,0,0.45);
+        --text: #ffffff;
+        --text-muted: rgba(255,255,255,0.45);
+        --radius: 18px;
+        --red: #ff4444;
+        --blue: #4da8ff;
+    }
+
+    body {
+        font-family: 'Cairo', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,215,0,0.06) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,215,0,0.2);border-radius:3px}
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(12,12,12,0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 28px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-logo {
+        font-size: 1.6rem;
+        line-height: 1;
+    }
+
+    .topbar-title {
+        font-size: 1.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--gold), #fff8dc, var(--gold));
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shine 4s linear infinite;
+    }
+
+    @keyframes shine {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+    }
+
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stats-chip {
+        background: rgba(255,215,0,0.07);
+        border: 1px solid var(--border);
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--gold);
+        white-space: nowrap;
+    }
+
+    .stats-chip span { color: #fff; font-weight: 900; font-size: 1rem; }
+
+    .btn-add {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 22px;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #000;
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 900;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
+        white-space: nowrap;
+    }
+
+    .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,215,0,0.35); }
+    .btn-add:active { transform: scale(0.97); }
+
+    /* ===== GRID ===== */
+    .grid-wrap {
+        position: relative;
+        z-index: 1;
+        padding: 24px;
+    }
+
+    .section-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 14px;
+    }
+
+    .qcard {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .qcard::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,215,0,0.03), transparent);
+        opacity: 0;
+        transition: opacity 0.25s;
+    }
+
+    .qcard:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 20px rgba(255,215,0,0.1);
+    }
+
+    .qcard:hover::before { opacity: 1; }
+
+    .qcard__num {
+        font-size: 1.9rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+    }
+
+    .qcard__cat {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-top: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 4px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        display: none;
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; display: block; }
+    .empty-state p { font-size: 1rem; font-weight: 600; }
+    .empty-state.show { display: block; }
+
+    /* ===== MODAL ===== */
+    .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal__bg {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .modal__box {
+        position: relative;
+        background: #111;
+        border: 1px solid rgba(255,215,0,0.25);
+        border-radius: 24px;
+        padding: 28px;
+        width: 100%;
+        max-width: 680px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: mIn 0.35s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.9), 0 0 40px rgba(255,215,0,0.05);
+    }
+
+    @keyframes mIn {
+        from { opacity: 0; transform: translateY(28px) scale(0.96); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+
+    .modal__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255,215,0,0.1);
+    }
+
+    .modal__title {
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: var(--gold);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal__x {
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        color: rgba(255,255,255,0.7);
+        border-radius: 50%;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .modal__x:hover { background: rgba(255,68,68,0.3); border-color: rgba(255,68,68,0.5); color: #fff; }
+
+    /* ===== FORM FIELDS ===== */
+    .fg {
+        margin-bottom: 14px;
+    }
+
+    .fg label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .fg input, .fg textarea, .fg select {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: var(--text);
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color 0.25s, background 0.25s;
+    }
+
+    .fg input:focus, .fg textarea:focus, .fg select:focus {
+        border-color: rgba(255,215,0,0.5);
+        background: rgba(255,215,0,0.03);
+    }
+
+    .fg textarea { resize: vertical; min-height: 54px; }
+    .fg select { cursor: pointer; }
+    .fg select option { background: #1a1a1a; color: #fff; }
+
+    /* ===== QUESTION BLOCK ===== */
+    .q-block-form {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-right: 3px solid var(--gold);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .q-block-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: var(--gold);
+        margin-bottom: 16px;
+    }
+
+    .q-num-badge {
+        width: 26px;
+        height: 26px;
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 900;
+        flex-shrink: 0;
+    }
+
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ===== FOOTER BUTTONS ===== */
+    .modal__foot {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        font-family: 'Cairo', sans-serif;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: none;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        color: #000;
+        flex: 2;
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
+    }
+
+    .btn-save:hover { box-shadow: 0 8px 24px rgba(255,215,0,0.35); }
+
+    .btn-preview {
+        background: rgba(77,168,255,0.1);
+        color: var(--blue);
+        border: 1px solid rgba(77,168,255,0.25);
+        flex: 1;
+    }
+
+    .btn-preview:hover { background: rgba(77,168,255,0.18); }
+
+    .btn-delete {
+        background: rgba(255,68,68,0.08);
+        color: var(--red);
+        border: 1px solid rgba(255,68,68,0.2);
+        flex: 1;
+    }
+
+    .btn-delete:hover { background: rgba(255,68,68,0.18); }
+
+    /* ===== TOAST ===== */
+    .toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(80px);
+        background: rgba(255,215,0,0.97);
+        color: #000;
+        padding: 12px 28px;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.9rem;
+        z-index: 9999;
+        transition: transform 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+        pointer-events: none;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.err { background: rgba(255,68,68,0.97); color: #fff; }
+
+    .btn-import {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        background: rgba(255,215,0,0.08);
+        border: 1px solid var(--border);
+        color: var(--gold);
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-import:hover {
+        background: rgba(255,215,0,0.18);
+        border-color: var(--gold);
+    }
+
+    .qcard.local-only {
+        border-style: dashed;
+        border-color: rgba(255,215,0,0.45);
+        background: rgba(255,215,0,0.02);
+    }
+    .qcard.local-only::after {
+        content: 'افتراضي';
+        position: absolute;
+        bottom: 4px;
+        right: 50%;
+        transform: translateX(50%);
+        font-size: 0.62rem;
+        color: var(--gold-light);
+        font-weight: 700;
+        opacity: 0.6;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+        .topbar { padding: 0 16px; }
+        .topbar-title { font-size: 1rem; }
+        .grid-wrap { padding: 16px; }
+        .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .modal__box { padding: 20px 16px; border-radius: 20px; }
+        .frow { grid-template-columns: 1fr; }
+        .modal__foot .btn { font-size: 0.82rem; padding: 10px 12px; }
+    }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="topbar-left">
+        <span class="topbar-logo">⚽</span>
+        <span class="topbar-title">كابتن جم جم — لوحة التحكم</span>
+    </div>
+    <div class="topbar-right">
+        <div class="stats-chip">الكروت: <span id="sc">0</span></div>
+        <button class="btn-import" onclick="importDefaults()">📥 استيراد الافتراضي</button>
+        <button class="btn-add" onclick="addNewCard()">&#10133; إضافة كارت</button>
+    </div>
+</div>
+
+<!-- GRID -->
+<div class="grid-wrap">
+    <p class="section-label">الكروت المضافة</p>
+    <div class="grid" id="grid">
+        <div class="empty-state show" id="empty-state">
+            <span class="icon">🃏</span>
+            <p>لا توجد كروت بعد. ابدأ بإضافة أول كارت!</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal__bg" onclick="closeM()"></div>
+    <div class="modal__box">
+        <div class="modal__head">
+            <span class="modal__title"><span>🃏</span><span id="mtitle">تعديل الكارت</span></span>
+            <button class="modal__x" onclick="closeM()">&times;</button>
+        </div>
+
+        <form id="ef" onsubmit="return false">
+            <div class="fg">
+                <label>📂 فئة الكارت</label>
+                <select id="fc">
+                    <option value="أسئلة عامة">أسئلة عامة</option>
+                    <option value="صح ولا هبد">صح ولا هبد</option>
+                    <option value="مين أقرب">مين أقرب</option>
+                    <option value="المزاد">المزاد</option>
+                    <option value="أفهم صاحبك">أفهم صاحبك</option>
+                    <option value="توقف دولي">توقف دولي</option>
+                    <option value="ربع قرد">ربع قرد</option>
+                </select>
+            </div>
+
+            <!-- Q1 -->
+            <div class="q-block-form">
+                <div class="q-block-title">
+                    <div class="q-num-badge">١</div>
+                    <span>السؤال الأول</span>
+                </div>
+                <div class="fg"><label>نص السؤال</label><textarea id="fq1" placeholder="اكتب السؤال الأول هنا..."></textarea></div>
+                <div class="frow">
+                    <div class="fg"><label>الإجابة</label><input type="text" id="fa1" placeholder="الإجابة الصحيحة"></div>
+                    <div class="fg"><label>النقاط</label><input type="text" id="fp1" placeholder="مثال: 1 نقطة"></div>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="q-block-form">
+                <div class="q-block-title">
+                    <div class="q-num-badge">٢</div>
+                    <span>السؤال الثاني</span>
+                </div>
+                <div class="fg"><label>نص السؤال</label><textarea id="fq2" placeholder="اكتب السؤال الثاني هنا..."></textarea></div>
+                <div class="frow">
+                    <div class="fg"><label>الإجابة</label><input type="text" id="fa2" placeholder="الإجابة الصحيحة"></div>
+                    <div class="fg"><label>النقاط</label><input type="text" id="fp2" placeholder="مثال: 2 نقطة"></div>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="q-block-form">
+                <div class="q-block-title">
+                    <div class="q-num-badge">٣</div>
+                    <span>السؤال الثالث</span>
+                </div>
+                <div class="fg"><label>نص السؤال</label><textarea id="fq3" placeholder="اكتب السؤال الثالث هنا..."></textarea></div>
+                <div class="frow">
+                    <div class="fg"><label>الإجابة</label><input type="text" id="fa3" placeholder="الإجابة الصحيحة"></div>
+                    <div class="fg"><label>النقاط</label><input type="text" id="fp3" placeholder="مثال: 3 نقاط"></div>
+                </div>
+            </div>
+        </form>
+
+        <div class="modal__foot">
+            <button class="btn btn-save" onclick="saveQ()">&#128190; حفظ الكارت</button>
+            <button class="btn btn-preview" onclick="previewQ()">&#128065; معاينة</button>
+            <button class="btn btn-delete" onclick="delQ()">&#128465; مسح</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+<script src="default-cards.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCAd9UETOYGKhLQo_is6CTNvoOBGaejbmY",
+  authDomain: "gmgm2-2ad05.firebaseapp.com",
+  projectId: "gmgm2-2ad05",
+  storageBucket: "gmgm2-2ad05.firebasestorage.app",
+  messagingSenderId: "879475150068",
+  appId: "1:879475150068:web:f0c28b8a4bebdbaa3b22a1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let cid = null;
+let cardsData = [];
+
+function renderG() {
+    db.collection('questions').get().then(function(snap) {
+        cardsData = [];
+        const dbIds = new Set();
+        snap.forEach(function(doc) {
+            cardsData.push({id: doc.id, data: doc.data()});
+            dbIds.add(doc.id);
+        });
+
+        // Add local cards that are not in the database
+        for (const id in localCards) {
+            if (!dbIds.has(id)) {
+                cardsData.push({id: id, data: localCards[id], isLocalOnly: true});
+            }
+        }
+
+        cardsData.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+
+        const g = document.getElementById('grid');
+        g.innerHTML = '';
+
+        const empty = document.getElementById('empty-state');
+        if (cardsData.length === 0) {
+            empty.classList.add('show');
+            g.appendChild(empty);
+        } else {
+            empty.classList.remove('show');
+            cardsData.forEach(function(card) {
+                const c = document.createElement('div');
+                c.className = 'qcard' + (card.isLocalOnly ? ' local-only' : '');
+                c.onclick = function() { openM(card.id); };
+                const ct = card.data.category || '';
+                c.innerHTML = '<div class="qcard__num">' + card.id + '</div><div class="qcard__cat">' + ct + '</div>';
+                g.appendChild(c);
+            });
+        }
+        document.getElementById('sc').textContent = cardsData.length;
+    }).catch(function(e) {
+        console.error("Firestore read failed, displaying local cards:", e);
+        cardsData = [];
+        for (const id in localCards) {
+            cardsData.push({id: id, data: localCards[id], isLocalOnly: true});
+        }
+        cardsData.sort((a,b) => parseInt(a.id) - parseInt(b.id));
+        const g = document.getElementById('grid');
+        g.innerHTML = '';
+        cardsData.forEach(function(card) {
+            const c = document.createElement('div');
+            c.className = 'qcard local-only';
+            c.onclick = function() { openM(card.id); };
+            const ct = card.data.category || '';
+            c.innerHTML = '<div class="qcard__num">' + card.id + '</div><div class="qcard__cat">' + ct + '</div>';
+            g.appendChild(c);
+        });
+        document.getElementById('sc').textContent = cardsData.length;
+    });
+}
+
+function addNewCard() {
+    let maxId = 0;
+    cardsData.forEach(c => { let n = parseInt(c.id); if (!isNaN(n) && n > maxId) maxId = n; });
+    cid = String(maxId + 1);
+    document.getElementById('mtitle').textContent = 'إضافة كارت رقم ' + cid;
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('ef').reset();
+}
+
+function openM(id) {
+    cid = id;
+    document.getElementById('mtitle').textContent = 'تعديل الكارت رقم ' + id;
+    document.getElementById('modal').classList.add('active');
+    
+    const localData = localCards[id];
+    db.collection('questions').doc(id).get().then(function(doc) {
+        let r = null;
+        if (doc.exists) {
+            r = doc.data();
+        } else if (localData) {
+            r = localData;
+        }
+
+        if (r) {
+            document.getElementById('fc').value = r.category || 'أسئلة عامة';
+            document.getElementById('fq1').value = r.q1 || '';
+            document.getElementById('fa1').value = r.a1 || '';
+            document.getElementById('fp1').value = r.p1 || '';
+            document.getElementById('fq2').value = r.q2 || '';
+            document.getElementById('fa2').value = r.a2 || '';
+            document.getElementById('fp2').value = r.p2 || '';
+            document.getElementById('fq3').value = r.q3 || '';
+            document.getElementById('fa3').value = r.a3 || '';
+            document.getElementById('fp3').value = r.p3 || '';
+        } else {
+            document.getElementById('ef').reset();
+        }
+    }).catch(function(e) {
+        console.error("Firestore get failed, trying local data:", e);
+        if (localData) {
+            document.getElementById('fc').value = localData.category || 'أسئلة عامة';
+            document.getElementById('fq1').value = localData.q1 || '';
+            document.getElementById('fa1').value = localData.a1 || '';
+            document.getElementById('fp1').value = localData.p1 || '';
+            document.getElementById('fq2').value = localData.q2 || '';
+            document.getElementById('fa2').value = localData.a2 || '';
+            document.getElementById('fp2').value = localData.p2 || '';
+            document.getElementById('fq3').value = localData.q3 || '';
+            document.getElementById('fa3').value = localData.a3 || '';
+            document.getElementById('fp3').value = localData.p3 || '';
+        } else {
+            document.getElementById('ef').reset();
+        }
+    });
+}
+
+function closeM() { document.getElementById('modal').classList.remove('active'); cid = null; }
+
+async function saveQ() {
+    if (!cid) return;
+    showT('جاري الحفظ...', false);
+    const d = {
+        category: document.getElementById('fc').value,
+        q1: document.getElementById('fq1').value.trim(), a1: document.getElementById('fa1').value.trim(), p1: document.getElementById('fp1').value.trim(),
+        q2: document.getElementById('fq2').value.trim(), a2: document.getElementById('fa2').value.trim(), p2: document.getElementById('fp2').value.trim(),
+        q3: document.getElementById('fq3').value.trim(), a3: document.getElementById('fa3').value.trim(), p3: document.getElementById('fp3').value.trim(),
+    };
+    try {
+        await db.collection('questions').doc(cid).set(d, {merge: true});
+        showT('تم الحفظ بنجاح ✅');
+        renderG();
+        closeM();
+    } catch(e) {
+        console.error(e);
+        showT('خطأ في الحفظ: ' + e.message, true);
+    }
+}
+
+async function importDefaults() {
+    if (confirm('هل تريد رفع جميع الأسئلة الكروية الافتراضية (35 كارت) إلى قاعدة البيانات؟')) {
+        showT('جاري استيراد الأسئلة...', false);
+        let count = 0;
+        try {
+            for (const id in localCards) {
+                await db.collection('questions').doc(id).set(localCards[id], {merge: true});
+                count++;
+            }
+            showT('تم استيراد ' + count + ' كارت بنجاح ✅');
+            renderG();
+        } catch(e) {
+            console.error(e);
+            showT('حدث خطأ أثناء الاستيراد: ' + e.message, true);
+        }
+    }
+}
+
+function delQ() {
+    if (!cid) return;
+    if (confirm('هل أنت متأكد من مسح هذا الكارت؟')) {
+        db.collection('questions').doc(cid).delete().then(function() {
+            showT('تم المسح');
+            closeM();
+            renderG();
+        }).catch(function(e) {
+            console.error(e);
+            showT('خطأ في المسح: ' + e.message, true);
+        });
+    }
+}
+
+function previewQ() { if (!cid) return; window.open('index.html?id=' + cid, '_blank'); }
+
+function showT(m, err) {
+    const t = document.getElementById('toast');
+    t.textContent = m;
+    t.className = 'toast' + (err ? ' err' : '') + ' show';
+    setTimeout(function() { t.classList.remove('show'); }, err ? 5000 : 2600);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('modal').classList.contains('active')) return;
+    if (e.key === 'Escape') closeM();
+});
+
+renderG();
+</script>
+</body>
+</html>
